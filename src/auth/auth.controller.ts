@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Req, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { promises } from 'dns';
@@ -22,5 +22,12 @@ export class AuthController {
   @UseGuards(AuthGuard())
   test(@Req() req) {
     console.log(req);
+  }
+
+  @Get('/welcome')
+  welcome() {
+    return {
+      message: 'Welcome to our application',
+    };
   }
 }
