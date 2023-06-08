@@ -17,6 +17,8 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
 import { string } from 'joi';
 import { EMPTY } from 'rxjs';
+import { Role } from './role/role.entity';
+import { CreateRoleDto } from './dto/create-role.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,10 +26,25 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
   ) {}
 
+  async getRoleDefature(): Promise<Role[]> {
+    const query = this.roleRepository.createQueryBuilder('role');
+    query.where('role.name LIKE (:status)', { status: `user` });
+    const roles = await query.getMany();
+    return roles;
+  }
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    const roleUsers = await this.getRoleDefature();
+    if (roleUsers == null || roleUsers.length == 0) {
+      return;
+    }
+    const roleUser = roleUsers[0];
+    // console.log(role);
     const { username, password } = authCredentialsDto;
+
     const salf = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salf);
     console.log('salty', salf);
@@ -36,6 +53,7 @@ export class AuthService {
     const user = this.usersRepository.create({
       username,
       password: hashedPassword,
+      role: roleUser,
     });
     try {
       await this.usersRepository.save(user);
@@ -57,12 +75,27 @@ export class AuthService {
 
     const user = await this.usersRepository.findOne({ where: { username } });
     if (user && (await bcrypt.compare(password, user.password))) {
+      console.log(user);
+      const role = user.role.name;
       // return 'succes';
-      const payload: JwtPayload = { username };
+      const payload: JwtPayload = { username, role };
       const accessToken: string = await this.jwtService.sign(payload);
       return { accessToken };
     } else {
       throw new UnauthorizedException('Please username or password wrong');
     }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async createRole(createRoleDto: CreateRoleDto, req): Promise<Role> {
+    console.log(req.user.role);
+    if (req.user.role !== 'admin') {
+      throw new UnauthorizedException();
+    }
+    const { name } = createRoleDto;
+    const role = this.roleRepository.create({
+      name,
+    });
+    await this.roleRepository.save(role);
+    return role;
   }
 }
