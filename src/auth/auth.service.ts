@@ -19,6 +19,7 @@ import { string } from 'joi';
 import { EMPTY } from 'rxjs';
 import { Role } from './role/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    private mailService: MailService,
   ) {}
 
   async getRoleDefature(): Promise<Role[]> {
@@ -37,7 +39,7 @@ export class AuthService {
     return roles;
   }
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-    const { username, password } = authCredentialsDto;
+    const { username, password, email } = authCredentialsDto;
     const roleUsers = await this.getRoleDefature();
     console.log(roleUsers);
     if (roleUsers == null || roleUsers.length == 0) {
@@ -55,6 +57,7 @@ export class AuthService {
     const user = this.usersRepository.create({
       username,
       password: hashedPassword,
+      email,
       role: roleUser,
     });
     try {
@@ -82,6 +85,7 @@ export class AuthService {
       // return 'succes';
       const payload: JwtPayload = { username, role };
       const accessToken: string = await this.jwtService.sign(payload);
+      await this.mailService.sendUserConfirmation(user, accessToken);
       return { accessToken };
     } else {
       throw new UnauthorizedException('Please username or password wrong');

@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStratery } from './jwt.strategy';
 import { Role } from './role/role.entity';
 import { RoleController } from './role/role.controller';
+import { MailModule } from 'src/mail/mail.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -19,6 +20,7 @@ import { RoleController } from './role/role.controller';
       },
     }),
     TypeOrmModule.forFeature([User, Role]),
+    MailModule,
   ],
   providers: [AuthService, JwtStratery],
   controllers: [AuthController, RoleController],
