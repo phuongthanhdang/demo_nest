@@ -94,10 +94,15 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     const { name } = createRoleDto;
-    const role = this.roleRepository.create({
-      name,
-    });
-    await this.roleRepository.save(role);
-    return role;
+    const checkRole = await this.roleRepository.findOne({ where: { name } });
+    if (checkRole) {
+      throw new ConflictException('role alrealy exists');
+    } else {
+      const role = this.roleRepository.create({
+        name,
+      });
+      await this.roleRepository.save(role);
+      return role;
+    }
   }
 }
