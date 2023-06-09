@@ -26,7 +26,7 @@ export class User {
   @OneToMany((_type) => Task, (task) => task.user, { eager: true })
   tasks: Task[];
 
-  @OneToOne(() => Role, {
+  @ManyToOne(() => Role, {
     eager: true,
     cascade: true,
   })

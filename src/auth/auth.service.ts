@@ -37,13 +37,15 @@ export class AuthService {
     return roles;
   }
   async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    const { username, password } = authCredentialsDto;
     const roleUsers = await this.getRoleDefature();
+    console.log(roleUsers);
     if (roleUsers == null || roleUsers.length == 0) {
       return;
     }
     const roleUser = roleUsers[0];
+    console.log(roleUser);
     // console.log(role);
-    const { username, password } = authCredentialsDto;
 
     const salf = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salf);
