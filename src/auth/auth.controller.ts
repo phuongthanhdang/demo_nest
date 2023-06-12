@@ -6,6 +6,7 @@ import {
   Req,
   Get,
   Request,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -60,4 +61,10 @@ export class AuthController {
   forgotPassword(@Body() forgotPass: ForgotPassword) {
     return this.authService.forgotPassword(forgotPass);
   }
+
+  // @UseGuards(AuthGuard)
+  // @Get('/logout')
+  // getProfile(@Request() req) {
+  //   return this.authService.logout(req);
+  // }
 }

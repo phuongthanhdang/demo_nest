@@ -23,6 +23,7 @@ import { MailService } from 'src/mail/mail.service';
 import { ResetPass } from 'src/mail/dto/resetPass.dto';
 import { ForgotPassword } from 'src/mail/dto/forgot-pass.dto';
 import { SiginDto } from './dto/sigin.dto';
+import { SessionService } from 'src/session/session.service';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     private mailService: MailService,
+    private sessionService: SessionService,
   ) {}
 
   async getRoleDefature(): Promise<Role[]> {
@@ -81,12 +83,23 @@ export class AuthService {
 
     const user = await this.usersRepository.findOne({ where: { username } });
     if (user && (await bcrypt.compare(password, user.password))) {
+      console.log('yes');
       console.log(user);
       const role = user.role.name;
       // return 'succes';
       const payload: JwtPayload = { username, role };
       const accessToken: string = await this.jwtService.sign(payload);
       await this.mailService.sendUserConfirmation(user, accessToken);
+
+      const payloadToken = await this.jwtService.verifyAsync(accessToken, {
+        secret: 'topSecret51',
+      });
+      console.log('payloadToken');
+      const convertTime = new Date(payloadToken.exp);
+      console.log(convertTime);
+
+      await this.sessionService.craeteSession(user, accessToken, convertTime);
+
       return { accessToken };
     } else {
       throw new UnauthorizedException('Please username or password wrong');
@@ -97,6 +110,12 @@ export class AuthService {
     console.log(req.user.role);
     if (req.user.role !== 'admin') {
       throw new UnauthorizedException();
+    }
+    const username = req.user.username;
+    const user = await this.usersRepository.findOne({ where: { username } });
+    const checkSession = await this.sessionService.getSessionByUserId(user);
+    if (checkSession && checkSession.isExp == true) {
+      throw new UnauthorizedException('Plaese login! Thank');
     }
     const { name } = createRoleDto;
     const checkRole = await this.roleRepository.findOne({ where: { name } });
@@ -133,5 +152,11 @@ export class AuthService {
     await this.usersRepository.update(user.id, user);
 
     return user;
+  }
+  async logout(req) {
+    const username = req.user.username;
+    const user = await this.usersRepository.findOne({ where: { username } });
+
+    await this.sessionService.updateIsExp(user);
   }
 }

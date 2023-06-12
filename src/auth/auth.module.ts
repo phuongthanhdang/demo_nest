@@ -9,6 +9,7 @@ import { JwtStratery } from './jwt.strategy';
 import { Role } from './role/role.entity';
 import { RoleController } from './role/role.controller';
 import { MailModule } from 'src/mail/mail.module';
+import { SessionModule } from 'src/session/session.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -21,6 +22,7 @@ import { MailModule } from 'src/mail/mail.module';
     }),
     TypeOrmModule.forFeature([User, Role]),
     MailModule,
+    SessionModule,
   ],
   providers: [AuthService, JwtStratery],
   controllers: [AuthController, RoleController],

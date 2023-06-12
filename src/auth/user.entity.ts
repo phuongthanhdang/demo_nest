@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Role } from './role/role.entity';
+import { Session } from 'src/session/session.entity';
 
 @Entity()
 export class User {
@@ -35,5 +36,8 @@ export class User {
   })
   @JoinColumn()
   public role: Role;
+
+  @OneToMany((_type) => Session, (session) => session.user)
+  sessions: Session[];
 }
 export default User;

@@ -27,9 +27,14 @@ export class RoleController {
     return this.authService.createRole(createRoleDto, req);
   }
 
+  // @UseGuards(AuthGuard)
+  // @Get('profile')
+  // getProfile(@Request() req) {
+  //   return req.user;
+  // }
   @UseGuards(AuthGuard)
-  @Get('profile')
+  @Get('/logout')
   getProfile(@Request() req) {
-    return req.user;
+    return this.authService.logout(req);
   }
 }
