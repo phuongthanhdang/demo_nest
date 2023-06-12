@@ -20,5 +20,8 @@ export class AuthCredentialsDto {
   })
   password: string;
 
+  @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, {
+    message: 'email not',
+  })
   email: string;
 }

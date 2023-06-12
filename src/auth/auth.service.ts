@@ -20,6 +20,9 @@ import { EMPTY } from 'rxjs';
 import { Role } from './role/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { MailService } from 'src/mail/mail.service';
+import { ResetPass } from 'src/mail/dto/resetPass.dto';
+import { ForgotPassword } from 'src/mail/dto/forgot-pass.dto';
+import { SiginDto } from './dto/sigin.dto';
 
 @Injectable()
 export class AuthService {
@@ -73,10 +76,8 @@ export class AuthService {
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
     return this.createUser(authCredentialsDto);
   }
-  async signIn(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string }> {
-    const { username, password } = authCredentialsDto;
+  async signIn(siginDto: SiginDto): Promise<{ accessToken: string }> {
+    const { username, password } = siginDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -108,5 +109,29 @@ export class AuthService {
       await this.roleRepository.save(role);
       return role;
     }
+  }
+  async resetPassLink(resetPass: ResetPass) {
+    const { email } = resetPass;
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    await this.mailService.sendPassResetLink(resetPass, user);
+  }
+
+  async forgotPassword(forgotPass: ForgotPassword) {
+    const { username, newPass } = forgotPass;
+    const user = await this.usersRepository.findOne({ where: { username } });
+    console.log(user);
+    if (!user) {
+      throw new NotFoundException();
+    } else {
+      const salf = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(newPass, salf);
+      console.log(hashedPassword);
+      user.password = hashedPassword;
+    }
+    console.log(user.password);
+    await this.usersRepository.update(user.id, user);
+
+    return user;
   }
 }

@@ -26,7 +26,7 @@ export class User {
   @Column()
   email: string;
 
-  @OneToMany((_type) => Task, (task) => task.user, { eager: true })
+  @OneToMany((_type) => Task, (task) => task.user)
   tasks: Task[];
 
   @ManyToOne(() => Role, {

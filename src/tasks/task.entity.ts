@@ -3,7 +3,7 @@ import { User } from 'src/auth/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'task' })
-export class Task{
+export class Task {
   @PrimaryGeneratedColumn()
   id: string;
 
