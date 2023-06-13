@@ -8,6 +8,7 @@ import { configValidationSchema } from './config.schema';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
 import { SessionModule } from './session/session.module';
+import { ProductModule } from './product/product.module';
 import * as Joi from '@hapi/joi';
 
 @Module({
@@ -40,6 +41,7 @@ import * as Joi from '@hapi/joi';
     DatabaseModule,
     MailModule,
     SessionModule,
+    ProductModule,
   ],
 })
 export class AppModule {}

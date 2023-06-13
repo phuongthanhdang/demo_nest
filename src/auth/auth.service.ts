@@ -50,6 +50,10 @@ export class AuthService {
     if (roleUsers == null || roleUsers.length == 0) {
       return;
     }
+    const emails = await this.usersRepository.findOne({ where: { email } });
+    if (emails) {
+      throw new ConflictException('Email exit');
+    }
     const roleUser = roleUsers[0];
     console.log(roleUser);
     // console.log(role);
@@ -137,8 +141,8 @@ export class AuthService {
   }
 
   async forgotPassword(forgotPass: ForgotPassword) {
-    const { username, newPass } = forgotPass;
-    const user = await this.usersRepository.findOne({ where: { username } });
+    const { email, newPass } = forgotPass;
+    const user = await this.usersRepository.findOne({ where: { email } });
     console.log(user);
     if (!user) {
       throw new NotFoundException();

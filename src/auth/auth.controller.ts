@@ -61,10 +61,4 @@ export class AuthController {
   forgotPassword(@Body() forgotPass: ForgotPassword) {
     return this.authService.forgotPassword(forgotPass);
   }
-
-  // @UseGuards(AuthGuard)
-  // @Get('/logout')
-  // getProfile(@Request() req) {
-  //   return this.authService.logout(req);
-  // }
 }
