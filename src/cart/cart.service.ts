@@ -16,16 +16,32 @@ export class CartService {
     private authService: AuthService,
   ) {}
 
-  async addCart(idProduct: string, user: User): Promise<string> {
+  async addCart(idProduct: string, req): Promise<string> {
     const product = await this.productService.getProductById(idProduct);
-    const { username } = user;
-    const users = await this.authService.getUserByUsername(username);
-    console.log(users);
-    const cart = this.cartRepository.create({
-      user,
-      product,
+    const username = req.user.username;
+    const user = await this.authService.getUserByUsername(username);
+    const carts = await this.cartRepository.findOne({
+      where: { user, product },
     });
-    await this.cartRepository.save(cart);
-    return 'Susscecfully';
+    if (carts) {
+      carts.count = carts.count++;
+      console.log(carts.count++);
+      await this.cartRepository.update(carts.id, carts);
+      return 'Susscecfully';
+    } else {
+      const cart = this.cartRepository.create({
+        count: 1,
+        user,
+        product,
+      });
+      await this.cartRepository.save(cart);
+      return 'Susscecfully';
+    }
+  }
+  async getCartByUserId(req): Promise<Cart[]> {
+    const username = req.user.username;
+    const user = await this.authService.getUserByUsername(username);
+    const carts = await this.cartRepository.find({ where: { user } });
+    return carts;
   }
 }
