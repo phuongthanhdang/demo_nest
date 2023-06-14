@@ -163,4 +163,8 @@ export class AuthService {
 
     await this.sessionService.updateIsExp(user);
   }
+  async getUserByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { username } });
+    return user;
+  }
 }

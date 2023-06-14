@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Product } from './product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,7 +13,10 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  async createProduct(craeteProduct: CraeteProduct): Promise<Product> {
+  async createProduct(craeteProduct: CraeteProduct, req): Promise<Product> {
+    if (req.user.role != 'admin') {
+      throw new UnauthorizedException();
+    }
     const { image, name, title, price } = craeteProduct;
 
     const product = this.productRepository.create({
@@ -43,5 +46,9 @@ export class ProductService {
       const product = await query.getMany();
       return product;
     }
+  }
+  async getProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne({ where: { id } });
+    return product;
   }
 }

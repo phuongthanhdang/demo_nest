@@ -26,6 +26,6 @@ import { SessionModule } from 'src/session/session.module';
   ],
   providers: [AuthService, JwtStratery],
   controllers: [AuthController, RoleController],
-  exports: [JwtStratery, PassportModule],
+  exports: [JwtStratery, PassportModule, AuthService],
 })
 export class AuthModule {}
