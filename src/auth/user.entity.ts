@@ -13,6 +13,7 @@ import {
 import { Role } from './role/role.entity';
 import { Session } from 'src/session/session.entity';
 import { Cart } from 'src/cart/cart.entity';
+import { LockAccount } from './lock/lock.entity';
 
 @Entity()
 export class User {
@@ -43,5 +44,8 @@ export class User {
 
   @OneToMany((_type) => Cart, (cart) => cart.user)
   cart: Cart[];
+
+  @Column({ default: false })
+  lock: boolean;
 }
 export default User;

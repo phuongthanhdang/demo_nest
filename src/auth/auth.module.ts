@@ -11,6 +11,7 @@ import { RoleController } from './role/role.controller';
 import { MailModule } from 'src/mail/mail.module';
 import { SessionModule } from 'src/session/session.module';
 import { AuthGuard } from './auth.guard';
+import { LockAccount } from './lock/lock.entity';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -21,7 +22,7 @@ import { AuthGuard } from './auth.guard';
         expiresIn: 3600,
       },
     }),
-    TypeOrmModule.forFeature([User, Role]),
+    TypeOrmModule.forFeature([User, Role, LockAccount]),
     MailModule,
     SessionModule,
   ],

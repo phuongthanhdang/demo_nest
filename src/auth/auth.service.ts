@@ -15,7 +15,7 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
-import { string } from 'joi';
+import { boolean, string } from 'joi';
 import { EMPTY } from 'rxjs';
 import { Role } from './role/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -24,6 +24,7 @@ import { ResetPass } from 'src/mail/dto/resetPass.dto';
 import { ForgotPassword } from 'src/mail/dto/forgot-pass.dto';
 import { SiginDto } from './dto/sigin.dto';
 import { SessionService } from 'src/session/session.service';
+import { LockAccount } from './lock/lock.entity';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,8 @@ export class AuthService {
     private jwtService: JwtService,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(LockAccount)
+    private lockRepository: Repository<LockAccount>,
     private mailService: MailService,
     private sessionService: SessionService,
   ) {}
@@ -89,6 +92,9 @@ export class AuthService {
     const { username, password } = siginDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
+    if (user.lock == true) {
+      throw new HttpException('Account block', HttpStatus.FORBIDDEN);
+    }
     if (user && (await bcrypt.compare(password, user.password))) {
       console.log('yes');
       console.log(user);
@@ -109,6 +115,7 @@ export class AuthService {
 
       return { accessToken, username, role };
     } else {
+      await this.lockAccount(username);
       throw new UnauthorizedException('Please username or password wrong');
     }
   }
@@ -198,5 +205,33 @@ export class AuthService {
       throw new NotFoundException();
     }
     return user;
+  }
+
+  async lockAccount(username: string) {
+    const user = await this.usersRepository.findOne({ where: { username } });
+    // console.log(user);
+    if (user) {
+      const lockAccount = await this.lockRepository.findOne({
+        where: { user },
+      });
+      if (lockAccount) {
+        if (lockAccount.count <= 4) {
+          console.log(lockAccount.count++);
+          lockAccount.count = lockAccount.count++;
+          await this.lockRepository.update(lockAccount.id, lockAccount);
+        } else {
+          user.lock = true;
+          console.log(user);
+          await this.usersRepository.update(user.id, user);
+          await this.lockRepository.delete(lockAccount.id);
+        }
+      } else {
+        const saveLock = await this.lockRepository.create({
+          count: 1,
+          user,
+        });
+        await this.lockRepository.save(saveLock);
+      }
+    }
   }
 }
