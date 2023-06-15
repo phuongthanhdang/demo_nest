@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { JwtPayload } from './jwt-payload.interface';
 
 @Injectable()
-export class JwtStratery extends PassportStrategy(Strategy){
+export class JwtStratery extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -25,5 +25,6 @@ export class JwtStratery extends PassportStrategy(Strategy){
       throw new UnauthorizedException();
     }
     return user;
+    console.log('validate: ', user);
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Session } from './session.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,7 +16,9 @@ export class SessionService {
   ) {}
 
   async craeteSession(user: User, token: string, createAt) {
-    const found = await this.sessionRepository.findOne({ where: { user } });
+    const found = await this.sessionRepository.findOne({
+      where: { user, token },
+    });
     if (!found) {
       const session = this.sessionRepository.create({
         user,
@@ -43,14 +49,23 @@ export class SessionService {
     await this.sessionRepository.update(id, session);
     return session;
   }
-  async updateIsExp(user: User) {
-    const found = await this.sessionRepository.findOne({ where: { user } });
+  async updateIsExp(user: User, token: string) {
+    const found = await this.sessionRepository.findOne({
+      where: { user, token },
+    });
     if (!found) {
       throw new NotFoundException();
     } else {
       found.isExp = true;
       await this.sessionRepository.update(found.id, found);
       return found;
+    }
+  }
+  async getSesionByToken(token: string) {
+    const session = await this.sessionRepository.findOne({ where: { token } });
+    const { isExp } = session;
+    if (session && isExp == true) {
+      throw new UnauthorizedException('Please login! Thank');
     }
   }
 }

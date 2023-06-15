@@ -10,6 +10,7 @@ import { Role } from './role/role.entity';
 import { RoleController } from './role/role.controller';
 import { MailModule } from 'src/mail/mail.module';
 import { SessionModule } from 'src/session/session.module';
+import { AuthGuard } from './auth.guard';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -24,7 +25,7 @@ import { SessionModule } from 'src/session/session.module';
     MailModule,
     SessionModule,
   ],
-  providers: [AuthService, JwtStratery],
+  providers: [AuthService, JwtStratery, AuthGuard],
   controllers: [AuthController, RoleController],
   exports: [JwtStratery, PassportModule, AuthService],
 })

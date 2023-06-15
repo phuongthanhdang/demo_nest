@@ -10,6 +10,7 @@ import { AuthService } from '../auth.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { Role } from './role.entity';
 import { AuthGuard } from '../auth.guard';
+import User from '../user.entity';
 // import { AuthGuard } from '@nestjs/passport';
 // import { AuthGuard } from './auth.guard';
 
@@ -34,7 +35,7 @@ export class RoleController {
   // }
   @UseGuards(AuthGuard)
   @Get('/logout')
-  getProfile(@Request() req) {
+  getProfile(@Request() req): Promise<User> {
     return this.authService.logout(req);
   }
 }

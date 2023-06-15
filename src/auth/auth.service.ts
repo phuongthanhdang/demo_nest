@@ -43,7 +43,7 @@ export class AuthService {
     const roles = await query.getMany();
     return roles;
   }
-  async createUser(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+  async createUser(authCredentialsDto: AuthCredentialsDto): Promise<User> {
     const { username, password, email } = authCredentialsDto;
     const roleUsers = await this.getRoleDefature();
     console.log(roleUsers);
@@ -71,6 +71,7 @@ export class AuthService {
     });
     try {
       await this.usersRepository.save(user);
+      return user;
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('Username alrealy exists');
@@ -79,10 +80,12 @@ export class AuthService {
       }
     }
   }
-  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<User> {
     return this.createUser(authCredentialsDto);
   }
-  async signIn(siginDto: SiginDto): Promise<{ accessToken: string }> {
+  async signIn(
+    siginDto: SiginDto,
+  ): Promise<{ accessToken: string; username: string; role: string }> {
     const { username, password } = siginDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
@@ -104,7 +107,7 @@ export class AuthService {
 
       await this.sessionService.craeteSession(user, accessToken, convertTime);
 
-      return { accessToken };
+      return { accessToken, username, role };
     } else {
       throw new UnauthorizedException('Please username or password wrong');
     }
@@ -133,11 +136,12 @@ export class AuthService {
       return role;
     }
   }
-  async resetPassLink(resetPass: ResetPass) {
+  async resetPassLink(resetPass: ResetPass): Promise<string> {
     const { email } = resetPass;
     const user = await this.usersRepository.findOne({ where: { email } });
 
     await this.mailService.sendPassResetLink(resetPass, user);
+    throw new HttpException('successfully', HttpStatus.OK);
   }
 
   async forgotPassword(forgotPass: ForgotPassword) {
@@ -157,14 +161,42 @@ export class AuthService {
 
     return user;
   }
-  async logout(req) {
+  async logout(req): Promise<User> {
+    // console.log(req);
+    const token = await this.getToken(req);
+    // console.log('token: ', token);
     const username = req.user.username;
     const user = await this.usersRepository.findOne({ where: { username } });
 
-    await this.sessionService.updateIsExp(user);
+    await this.sessionService.updateIsExp(user, token);
+    return user;
   }
   async getUserByUsername(username: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { username } });
+    return user;
+  }
+  async getToken(req): Promise<string> {
+    const { rawHeaders } = req;
+    if (rawHeaders.includes('Authorization')) {
+      // console.log(rawHeaders);
+
+      let authorizationIndex = rawHeaders.indexOf('Authorization');
+      authorizationIndex += 1;
+      const token = rawHeaders[authorizationIndex].split(' ');
+      // console.log('bearer token: ', token);
+      let tokenIndex = token.indexOf('Bearer');
+      tokenIndex += 1;
+      const tokenfix = token[tokenIndex];
+      // console.log(tokenfix);
+      return tokenfix;
+    }
+  }
+  async getInformation(req): Promise<User> {
+    const username = req.user.username;
+    const user = await this.usersRepository.findOne({ where: { username } });
+    if (!user) {
+      throw new NotFoundException();
+    }
     return user;
   }
 }
