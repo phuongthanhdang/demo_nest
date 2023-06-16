@@ -7,7 +7,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
@@ -15,8 +14,6 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
-import { boolean, string } from 'joi';
-import { EMPTY } from 'rxjs';
 import { Role } from './role/role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { MailService } from 'src/mail/mail.service';
@@ -25,6 +22,7 @@ import { ForgotPassword } from 'src/mail/dto/forgot-pass.dto';
 import { SiginDto } from './dto/sigin.dto';
 import { SessionService } from 'src/session/session.service';
 import { LockAccount } from './lock/lock.entity';
+import { UserRegister } from './dto/user-register.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +44,9 @@ export class AuthService {
     const roles = await query.getMany();
     return roles;
   }
-  async createUser(authCredentialsDto: AuthCredentialsDto): Promise<User> {
+  async createUser(
+    authCredentialsDto: AuthCredentialsDto,
+  ): Promise<UserRegister> {
     const { username, password, email } = authCredentialsDto;
     const roleUsers = await this.getRoleDefature();
     console.log(roleUsers);
@@ -74,7 +74,11 @@ export class AuthService {
     });
     try {
       await this.usersRepository.save(user);
-      return user;
+      const userRegister = new UserRegister();
+      userRegister.email = user.email;
+      userRegister.username = user.username;
+      userRegister.role = user.role;
+      return userRegister;
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('Username alrealy exists');
@@ -83,7 +87,7 @@ export class AuthService {
       }
     }
   }
-  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<User> {
+  async signUp(authCredentialsDto: AuthCredentialsDto): Promise<UserRegister> {
     return this.createUser(authCredentialsDto);
   }
   async signIn(
