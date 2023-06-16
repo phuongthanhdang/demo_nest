@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cart } from './cart.entity';
 import { Repository } from 'typeorm';
@@ -21,6 +21,9 @@ export class CartService {
 
   async addCart(idProduct: string, req): Promise<string> {
     const product = await this.productService.getProductById(idProduct);
+    if (!product) {
+      throw new NotFoundException('Product does not exist');
+    }
     const username = req.user.username;
     const user = await this.authService.getUserByUsername(username);
     const carts = await this.cartRepository.findOne({
