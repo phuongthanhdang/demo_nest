@@ -5,6 +5,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import User from 'src/auth/user.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Cart } from './cart.entity';
+import { AddCart } from './dto/add-cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -21,7 +22,7 @@ export class CartController {
 
   @UseGuards(AuthGuard)
   @Post('/get-cart')
-  getCartByUserId(@Request() req): Promise<Cart[]> {
+  getCartByUserId(@Request() req): Promise<AddCart> {
     return this.cartService.getCartByUserId(req);
   }
 }

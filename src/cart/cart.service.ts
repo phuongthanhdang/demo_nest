@@ -6,6 +6,9 @@ import User from 'src/auth/user.entity';
 import { ProductService } from 'src/product/product.service';
 import { UsersRepository } from 'src/auth/users.repository';
 import { AuthService } from 'src/auth/auth.service';
+import { AddCart } from './dto/add-cart.dto';
+import { ProductCart } from './dto/product.dto';
+import e from 'express';
 
 @Injectable()
 export class CartService {
@@ -38,10 +41,29 @@ export class CartService {
       return 'Susscecfully';
     }
   }
-  async getCartByUserId(req): Promise<Cart[]> {
+  async getCartByUserId(req): Promise<AddCart> {
     const username = req.user.username;
     const user = await this.authService.getUserByUsername(username);
     const carts = await this.cartRepository.find({ where: { user } });
-    return carts;
+    const listProduct = [];
+
+    carts.forEach(function (entry) {
+      const productCart = new ProductCart();
+      productCart.id = entry.product.id;
+      productCart.image = entry.product.image;
+      productCart.name = entry.product.name;
+      productCart.tittle = entry.product.title;
+      productCart.quantity = entry.count;
+
+      listProduct.push(productCart);
+    });
+    console.log(listProduct);
+    const addCart = new AddCart();
+
+    addCart.userId = user.id;
+    addCart.username = user.username;
+    addCart.product = listProduct;
+
+    return addCart;
   }
 }
