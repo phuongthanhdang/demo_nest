@@ -12,6 +12,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { SessionModule } from 'src/session/session.module';
 import { AuthGuard } from './auth.guard';
 import { LockAccount } from './lock/lock.entity';
+import { CheckEmailModule } from 'src/check-email/check-email.module';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -25,6 +26,7 @@ import { LockAccount } from './lock/lock.entity';
     TypeOrmModule.forFeature([User, Role, LockAccount]),
     MailModule,
     SessionModule,
+    CheckEmailModule,
   ],
   providers: [AuthService, JwtStratery, AuthGuard],
   controllers: [AuthController, RoleController],

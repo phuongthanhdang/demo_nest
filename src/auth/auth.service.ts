@@ -23,6 +23,9 @@ import { SiginDto } from './dto/sigin.dto';
 import { SessionService } from 'src/session/session.service';
 import { LockAccount } from './lock/lock.entity';
 import { UserRegister } from './dto/user-register.dto';
+import { encryptData, decryptData } from '../utils/encrypt-file';
+import { CheckEmailService } from 'src/check-email/check-email.service';
+import { ForgotPassTest } from 'src/mail/dto/forgot-pass-test.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,6 +39,7 @@ export class AuthService {
     private lockRepository: Repository<LockAccount>,
     private mailService: MailService,
     private sessionService: SessionService,
+    private checkEmailService: CheckEmailService,
   ) {}
 
   async getRoleDefature(): Promise<Role[]> {
@@ -113,10 +117,16 @@ export class AuthService {
         secret: 'topSecret51',
       });
       console.log('payloadToken');
-      const convertTime = new Date(payloadToken.exp);
+      const convertTime = new Date(payloadToken.exp * 1000);
       console.log(convertTime);
 
       await this.sessionService.craeteSession(user, accessToken, convertTime);
+      const lockAccount = await this.lockRepository.findOne({
+        where: { user },
+      });
+      if (lockAccount) {
+        await this.lockRepository.delete(lockAccount.id);
+      }
 
       return { accessToken, username, role };
     } else {
@@ -151,12 +161,15 @@ export class AuthService {
   async resetPassLink(resetPass: ResetPass): Promise<string> {
     const { email } = resetPass;
     const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('email not exit');
+    }
 
     await this.mailService.sendPassResetLink(resetPass, user);
     throw new HttpException('successfully', HttpStatus.OK);
   }
 
-  async forgotPassword(forgotPass: ForgotPassword) {
+  async forgotPassword(forgotPass: ForgotPassTest) {
     const { email, newPass } = forgotPass;
     const user = await this.usersRepository.findOne({ where: { email } });
     console.log(user);
@@ -173,7 +186,7 @@ export class AuthService {
 
     return user;
   }
-  async logout(req): Promise<User> {
+  async logout(req): Promise<string> {
     // console.log(req);
     const token = await this.getToken(req);
     // console.log('token: ', token);
@@ -181,7 +194,7 @@ export class AuthService {
     const user = await this.usersRepository.findOne({ where: { username } });
 
     await this.sessionService.updateIsExp(user, token);
-    return user;
+    throw new HttpException('Successfully', HttpStatus.OK);
   }
   async getUserByUsername(username: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { username } });
@@ -220,7 +233,7 @@ export class AuthService {
         where: { user },
       });
       if (lockAccount) {
-        if (lockAccount.count <= 4) {
+        if (lockAccount.count <= 3) {
           console.log(lockAccount.count++);
           lockAccount.count = lockAccount.count++;
           await this.lockRepository.update(lockAccount.id, lockAccount);
@@ -237,6 +250,40 @@ export class AuthService {
         });
         await this.lockRepository.save(saveLock);
       }
+    }
+  }
+  async forgotPasswordEmail(forgotPass: ForgotPassword) {
+    try {
+      const { iv, encryptedData, newPass } = forgotPass;
+      const object = { iv: iv, encryptedData: encryptedData };
+      const check = await this.checkEmailService.getCheckEmail(
+        object.iv,
+        object.encryptedData,
+      );
+      if (!check) {
+        return;
+      }
+      // console.log(object);
+      // const username = decryptData(object);
+      const username = decryptData(object);
+      console.log(username);
+      const user = await this.usersRepository.findOne({ where: { username } });
+      console.log(user);
+      if (!user) {
+        throw new NotFoundException();
+      } else {
+        const salf = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(newPass, salf);
+        console.log(hashedPassword);
+        user.password = hashedPassword;
+      }
+      console.log(user.password);
+      await this.usersRepository.update(user.id, user);
+      await this.checkEmailService.delete(object.iv, object.encryptedData);
+
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException('Time out');
     }
   }
 }

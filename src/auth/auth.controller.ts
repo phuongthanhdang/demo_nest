@@ -12,16 +12,12 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { promises } from 'dns';
 // import { AuthGuard } from '@nestjs/passport';
-import { Role } from './role/role.entity';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { GetUser } from './get-user.decorator';
-import User from './user.entity';
 import { ResetPass } from 'src/mail/dto/resetPass.dto';
 import { ForgotPassword } from 'src/mail/dto/forgot-pass.dto';
 import { SiginDto } from './dto/sigin.dto';
 import { AuthGuard } from './auth.guard';
+import { ForgotPassTest } from 'src/mail/dto/forgot-pass-test.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -52,12 +48,16 @@ export class AuthController {
     return this.authService.resetPassLink(resetpass);
   }
   @Post('/forgot-password')
-  forgotPassword(@Body() forgotPass: ForgotPassword) {
+  forgotPassword(@Body() forgotPass: ForgotPassTest) {
     return this.authService.forgotPassword(forgotPass);
   }
   @UseGuards(AuthGuard)
   @Get('/information')
   getInformation(@Request() req) {
     return this.authService.getInformation(req);
+  }
+  @Post('/forgot-password-email')
+  forgotPasswordEmail(@Body() forgotPass: ForgotPassword) {
+    return this.authService.forgotPasswordEmail(forgotPass);
   }
 }

@@ -35,7 +35,7 @@ export class RoleController {
   // }
   @UseGuards(AuthGuard)
   @Get('/logout')
-  getProfile(@Request() req): Promise<User> {
+  getProfile(@Request() req) {
     return this.authService.logout(req);
   }
 }
