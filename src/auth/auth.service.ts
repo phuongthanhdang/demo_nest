@@ -280,8 +280,11 @@ export class AuthService {
       console.log(user.password);
       await this.usersRepository.update(user.id, user);
       await this.checkEmailService.delete(object.iv, object.encryptedData);
-
-      return user;
+      const userDto = new UserRegister();
+      userDto.email = user.email;
+      userDto.username = user.username;
+      userDto.role = user.role;
+      return userDto;
     } catch (error) {
       throw new UnauthorizedException('Time out');
     }
