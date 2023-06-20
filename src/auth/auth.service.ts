@@ -100,11 +100,10 @@ export class AuthService {
     const { username, password } = siginDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
-
+    if (user && user.lock == true) {
+      throw new HttpException('Account block', HttpStatus.FORBIDDEN);
+    }
     if (user && (await bcrypt.compare(password, user.password))) {
-      if (user.lock == true) {
-        throw new HttpException('Account block', HttpStatus.FORBIDDEN);
-      }
       console.log('yes');
       console.log(user);
       const role = user.role.name;
