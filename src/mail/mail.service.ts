@@ -32,7 +32,7 @@ export class MailService {
     const encryptedMessage = encryptData(user.username);
     console.log(encryptedMessage);
     console.log(decryptData(encryptedMessage));
-    const url = `https://demo-my-app-4ek3.vercel.app/forgotpassword?i=${encryptedMessage.iv}&data=${encryptedMessage.encryptedData}`;
+    const url = `http://localhost:4200/forgotpassword?i=${encryptedMessage.iv}&data=${encryptedMessage.encryptedData}`;
     await this.mailerService.sendMail({
       to: resetPass.email,
       // from: '"Support Team" <support@example.com>', // override default from

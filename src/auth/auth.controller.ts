@@ -52,7 +52,7 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPass);
   }
   @UseGuards(AuthGuard)
-  @Get('/information')
+  @Post('/information')
   getInformation(@Request() req) {
     return this.authService.getInformation(req);
   }
