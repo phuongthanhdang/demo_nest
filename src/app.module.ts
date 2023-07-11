@@ -11,6 +11,7 @@ import { SessionModule } from './session/session.module';
 import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { CheckEmailModule } from './check-email/check-email.module';
+import { LoaiSpModule } from './loai-sp/loai-sp.module';
 import * as Joi from '@hapi/joi';
 
 @Module({
@@ -46,6 +47,7 @@ import * as Joi from '@hapi/joi';
     ProductModule,
     CartModule,
     CheckEmailModule,
+    LoaiSpModule,
   ],
 })
 export class AppModule {}

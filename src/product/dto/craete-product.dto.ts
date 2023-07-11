@@ -3,4 +3,5 @@ export class CraeteProduct {
   name: string;
   title: string;
   price: number;
+  loaisp: string;
 }

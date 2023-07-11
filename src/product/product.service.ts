@@ -5,25 +5,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CraeteProduct } from './dto/craete-product.dto';
 import { SearchProduct } from './dto/search-product.dto';
 import { IsEmpty } from 'class-validator';
+import { LoaiSpService } from 'src/loai-sp/loai-sp.service';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    private loaiSpService: LoaiSpService,
   ) {}
 
   async createProduct(craeteProduct: CraeteProduct, req): Promise<Product> {
     if (req.user.role != 'admin') {
       throw new UnauthorizedException();
     }
-    const { image, name, title, price } = craeteProduct;
-
+    const { image, name, title, price, loaisp } = craeteProduct;
+    const loai = await this.loaiSpService.getLoaiSPById(loaisp);
+    console.log(loai);
     const product = this.productRepository.create({
       image,
       name,
       title,
       price,
+      loaisp: loai,
     });
     await this.productRepository.save(product);
     return product;
