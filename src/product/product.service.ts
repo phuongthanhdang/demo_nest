@@ -6,6 +6,7 @@ import { CraeteProduct } from './dto/craete-product.dto';
 import { SearchProduct } from './dto/search-product.dto';
 import { IsEmpty } from 'class-validator';
 import { LoaiSpService } from 'src/loai-sp/loai-sp.service';
+import { LoaiSP } from 'src/loai-sp/loai-sp.entity';
 
 @Injectable()
 export class ProductService {
@@ -53,6 +54,12 @@ export class ProductService {
   }
   async getProductById(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({ where: { id } });
+    return product;
+  }
+  async getProductByLoaiSP(id: string): Promise<Product[]> {
+    const query = this.productRepository.createQueryBuilder('product');
+    query.andWhere('product.loaisp.id =:id', { id });
+    const product = await query.getMany();
     return product;
   }
 }

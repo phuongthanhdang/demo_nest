@@ -14,6 +14,7 @@ import { SearchProduct } from './dto/search-product.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
 import User from 'src/auth/user.entity';
+import { LoaiSP } from 'src/loai-sp/loai-sp.entity';
 
 @Controller('product')
 export class ProductController {
@@ -34,5 +35,9 @@ export class ProductController {
   @Get('/:id')
   getTaskById(@Param('id') id: string): Promise<Product> {
     return this.productService.getProductById(id);
+  }
+  @Post('/loaisp/:id')
+  productByLoaiSP(@Param('id') id: string): Promise<Product[]> {
+    return this.productService.getProductByLoaiSP(id);
   }
 }
