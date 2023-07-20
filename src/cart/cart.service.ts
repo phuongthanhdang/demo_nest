@@ -9,6 +9,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { AddCart } from './dto/add-cart.dto';
 import { ProductCart } from './dto/product.dto';
 import e from 'express';
+import { AddToCart } from './dto/add-to-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -19,7 +20,8 @@ export class CartService {
     private authService: AuthService,
   ) {}
 
-  async addCart(idProduct: string, req): Promise<string> {
+  async addCart(addToCart: AddToCart, req): Promise<string> {
+    const { idProduct, count } = addToCart;
     const product = await this.productService.getProductById(idProduct);
     if (!product) {
       throw new NotFoundException('Product does not exist');
@@ -36,7 +38,7 @@ export class CartService {
       return 'Susscecfully';
     } else {
       const cart = this.cartRepository.create({
-        count: 1,
+        count,
         user,
         product,
       });

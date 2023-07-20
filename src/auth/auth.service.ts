@@ -94,9 +94,12 @@ export class AuthService {
   async signUp(authCredentialsDto: AuthCredentialsDto): Promise<UserRegister> {
     return this.createUser(authCredentialsDto);
   }
-  async signIn(
-    siginDto: SiginDto,
-  ): Promise<{ accessToken: string; username: string; role: string }> {
+  async signIn(siginDto: SiginDto): Promise<{
+    accessToken: string;
+    username: string;
+    role: string;
+    userId: any;
+  }> {
     const { username, password } = siginDto;
 
     const user = await this.usersRepository.findOne({ where: { username } });
@@ -107,6 +110,7 @@ export class AuthService {
       console.log('yes');
       console.log(user);
       const role = user.role.name;
+      const userId = user.id;
       // return 'succes';
       const payload: JwtPayload = { username, role };
       const accessToken: string = await this.jwtService.sign(payload);
@@ -127,7 +131,7 @@ export class AuthService {
         await this.lockRepository.delete(lockAccount.id);
       }
 
-      return { accessToken, username, role };
+      return { accessToken, username, role, userId };
     } else {
       await this.lockAccount(username);
       throw new UnauthorizedException('Please username or password wrong');
