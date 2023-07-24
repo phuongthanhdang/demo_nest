@@ -5,4 +5,5 @@ export class ProductCart {
   tittle: string;
   price: number;
   quantity: number;
+  idCart: string;
 }

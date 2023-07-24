@@ -14,6 +14,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Cart } from './cart.entity';
 import { AddCart } from './dto/add-cart.dto';
 import { AddToCart } from './dto/add-to-cart.dto';
+import { UpdateCountCart } from './dto/update-cart.dto';
 
 @Controller('cart')
 export class CartController {
@@ -29,5 +30,15 @@ export class CartController {
   @Post('/get-cart')
   getCartByUserId(@Request() req): Promise<AddCart> {
     return this.cartService.getCartByUserId(req);
+  }
+
+  @Post('/update-cart')
+  updateCountCart(@Body() updateCountCart: UpdateCountCart) {
+    return this.cartService.updateCountCart(updateCountCart);
+  }
+
+  @Post('/delete-cart')
+  deleteCart(@Body() updateCountCart: UpdateCountCart) {
+    return this.cartService.deleteCart(updateCountCart);
   }
 }
